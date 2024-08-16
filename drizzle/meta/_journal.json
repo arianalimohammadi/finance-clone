@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1723045234352,
+      "tag": "0000_blue_outlaw_kid",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1723048243554,
+      "tag": "0001_talented_vin_gonzales",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1723254855030,
+      "tag": "0002_rainy_arclight",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1723311491846,
+      "tag": "0003_slimy_star_brand",
+      "breakpoints": true
+    }
+  ]
+}
