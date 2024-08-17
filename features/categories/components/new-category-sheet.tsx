@@ -41,7 +41,7 @@ export const NewCategorySheet = () => {
             Create a new category to organize your transactions.
           </SheetDescription>
         </SheetHeader>
-        <CategoryForm onSubmit={(onSubmit) => {}} disabled={mutation.isPending} defaultValues={{ name: "", }} />
+        <CategoryForm onSubmit={onSubmit} disabled={mutation.isPending} defaultValues={{ name: "", }} />
       </SheetContent>
     </Sheet>
   );

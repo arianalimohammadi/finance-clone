@@ -11,7 +11,7 @@ export const useCreateAccounts = () => {
     const queryClient = useQueryClient();
 
     const mutation = useMutation<
-    RequestType,
+    ResponseType,
     Error,
     RequestType
     >({
@@ -24,7 +24,7 @@ export const useCreateAccounts = () => {
             queryClient.invalidateQueries({ queryKey: ["accounts"] });
         },
         onError: () => {
-            toast.error("Failed to create account")
+            toast.error("Failed to create account");
         },
     });
 

@@ -11,7 +11,7 @@ export const useCreateCategory = () => {
     const queryClient = useQueryClient();
 
     const mutation = useMutation<
-    RequestType,
+    ResponseType,
     Error,
     RequestType
     >({

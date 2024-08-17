@@ -1,7 +1,5 @@
 import { useRef, useState } from "react";
 
-import { useGetAccounts } from "@/features/accounts/api/use-get-accounts";
-import { useCreateAccounts } from "@/features/accounts/api/use-create-accounts";
 import { Select } from "@/components/select";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,16 +10,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useCreateAccounts } from "@/features/accounts/api/use-create-accounts";
+import { useGetAccounts } from "@/features/accounts/api/use-get-accounts";
 
-export const useSelectAccount = (
-  title: string,
-  message: string
-): [() => JSX.Element, () => Promise<unknown>] => {
+export const useSelectAccount = (): [
+  () => JSX.Element,
+  () => Promise<unknown>,
+] => {
   const accountQuery = useGetAccounts();
   const accountMutation = useCreateAccounts();
-  const onCreateAccount = (name: string) => accountMutation.mutate({
-    name
-  });
+
+  const onCreateAccount = (name: string) =>
+    accountMutation.mutate({
+      name,
+    });
+
   const accountOptions = (accountQuery.data ?? []).map((account) => ({
     label: account.name,
     value: account.id,
@@ -30,16 +33,15 @@ export const useSelectAccount = (
   const [promise, setPromise] = useState<{
     resolve: (value: string | undefined) => void;
   } | null>(null);
+
   const selectValue = useRef<string>();
 
   const confirm = () =>
-    new Promise((resolve, reject) => {
+    new Promise((resolve) => {
       setPromise({ resolve });
     });
 
-  const handleClose = () => {
-    setPromise(null);
-  };
+  const handleClose = () => setPromise(null);
 
   const handleConfirm = () => {
     promise?.resolve(selectValue.current);
@@ -52,19 +54,23 @@ export const useSelectAccount = (
   };
 
   const ConfirmationDialog = () => (
-    <Dialog open={promise !== null}>
+    <Dialog open={promise !== null} onOpenChange={handleCancel}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Select Account</DialogTitle>
-          <DialogDescription>Please select an account to continue.</DialogDescription>
+          <DialogDescription>
+            Please select an account to continue.
+          </DialogDescription>
         </DialogHeader>
-        <Select 
-         placeholder="Select an account"
-         options={accountOptions}
-         onCreate={onCreateAccount}
-         onChange={(value) => selectValue.current = value}
-         disabled={accountQuery.isLoading || accountMutation.isPending}
+
+        <Select
+          placeholder="Select an account"
+          options={accountOptions}
+          onCreate={onCreateAccount}
+          onChange={(value) => (selectValue.current = value)}
+          disabled={accountQuery.isLoading || accountMutation.isPending}
         />
+
         <DialogFooter className="pt-2">
           <Button onClick={handleCancel} variant="outline">
             Cancel

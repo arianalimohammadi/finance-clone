@@ -11,7 +11,7 @@ export const useCreateTransaction = () => {
     const queryClient = useQueryClient();
 
     const mutation = useMutation<
-    RequestType,
+    ResponseType,
     Error,
     RequestType
     >({

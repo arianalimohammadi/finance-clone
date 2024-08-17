@@ -6,9 +6,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
 import { TableHeadSelect } from "./table-head-select";
 
-type Props = {
+type ImportTableProps = {
   headers: string[];
   body: string[][];
   selectedColumns: Record<string, string | null>;
@@ -18,15 +19,15 @@ type Props = {
 export const ImportTable = ({
   headers,
   body,
-  selectedColumns,
   onTableHeadSelectChange,
-}: Props) => {
+  selectedColumns,
+}: ImportTableProps) => {
   return (
-    <div className="rounded-mb border overflow-hidden">
+    <div className="overflow-hidden rounded-md border">
       <Table>
         <TableHeader className="bg-muted">
           <TableRow>
-            {headers.map((_item, index) => (
+            {headers.map((_header, index) => (
               <TableHead key={index}>
                 <TableHeadSelect
                   columnIndex={index}
@@ -37,6 +38,7 @@ export const ImportTable = ({
             ))}
           </TableRow>
         </TableHeader>
+
         <TableBody>
           {body.map((row: string[], index) => (
             <TableRow key={index}>

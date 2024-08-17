@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -6,8 +5,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
-type Props = {
+type TableHeadSelectProps = {
   columnIndex: number;
   selectedColumns: Record<string, string | null>;
   onChange: (columnIndex: number, value: string | null) => void;
@@ -19,7 +19,7 @@ export const TableHeadSelect = ({
   columnIndex,
   selectedColumns,
   onChange,
-}: Props) => {
+}: TableHeadSelectProps) => {
   const currentSelection = selectedColumns[`column_${columnIndex}`];
 
   return (
@@ -29,19 +29,20 @@ export const TableHeadSelect = ({
     >
       <SelectTrigger
         className={cn(
-          "focus:ring-offset-0 focus:ring-transparent outline-none border-none bg-transparent capitalize",
+          "border-none bg-transparent capitalize outline-none focus:ring-transparent focus:ring-offset-0",
           currentSelection && "text-blue-500"
         )}
       >
         <SelectValue placeholder="Skip" />
       </SelectTrigger>
+
       <SelectContent>
         <SelectItem value="skip">Skip</SelectItem>
         {options.map((option, index) => {
-            const disabled =
-            Object.values(selectedColumns).includes(option)
-            && selectedColumns[`column_${columnIndex}`] !== option;
-            
+          const disabled =
+            Object.values(selectedColumns).includes(option) &&
+            selectedColumns[`column_${columnIndex}`] !== option;
+
           return (
             <SelectItem
               key={index}
