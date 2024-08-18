@@ -1,9 +1,9 @@
-import { z } from "zod";
-import { Hono } from "hono";
-import { and, desc, eq, gte, lt, lte, sql, sum } from "drizzle-orm";
-import { zValidator } from "@hono/zod-validator";
 import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
-import { subDays, parse, differenceInDays } from "date-fns";
+import { zValidator } from "@hono/zod-validator";
+import { differenceInDays, parse, subDays } from "date-fns";
+import { and, desc, eq, gte, lt, lte, sql, sum } from "drizzle-orm";
+import { Hono } from "hono";
+import { z } from "zod";
 
 import { db } from "@/db/drizzle";
 import { accounts, categories, transactions } from "@/db/schema";
@@ -20,12 +20,12 @@ const app = new Hono().get(
       accountId: z.string().optional(),
     })
   ),
-  async (c) => {
-    const auth = getAuth(c);
-    const { from, to, accountId } = c.req.valid("query");
+  async (ctx) => {
+    const auth = getAuth(ctx);
+    const { from, to, accountId } = ctx.req.valid("query");
 
     if (!auth?.userId) {
-      return c.json({ error: "Unauthroized" }, 401);
+      return ctx.json({ error: "Unauthorized." }, 401);
     }
 
     const defaultTo = new Date();
@@ -48,11 +48,13 @@ const app = new Hono().get(
       return await db
         .select({
           income:
-            sql`SUM(CASE WHEN ${transactions.amount} >= 0 THEN ${transactions.amount}
-        ELSE 0 END)`.mapWith(Number),
+            sql`SUM(CASE WHEN ${transactions.amount} >= 0 THEN ${transactions.amount} ELSE 0 END)`.mapWith(
+              Number
+            ),
           expenses:
-            sql`SUM(CASE WHEN ${transactions.amount} < 0 THEN ${transactions.amount}
-        ELSE 0 END)`.mapWith(Number),
+            sql`SUM(CASE WHEN ${transactions.amount} < 0 THEN ${transactions.amount} ELSE 0 END)`.mapWith(
+              Number
+            ),
           remaining: sum(transactions.amount).mapWith(Number),
         })
         .from(transactions)
@@ -62,7 +64,7 @@ const app = new Hono().get(
             accountId ? eq(transactions.accountId, accountId) : undefined,
             eq(accounts.userId, userId),
             gte(transactions.date, startDate),
-            lte(transactions.date, startDate)
+            lte(transactions.date, endDate)
           )
         );
     }
@@ -70,31 +72,33 @@ const app = new Hono().get(
     const [currentPeriod] = await fetchFinancialData(
       auth.userId,
       startDate,
-      endDate,
+      endDate
     );
     const [lastPeriod] = await fetchFinancialData(
       auth.userId,
       lastPeriodStart,
-      lastPeriodEnd,
+      lastPeriodEnd
     );
 
     const incomeChange = calculatePercentageChange(
       currentPeriod.income,
-      lastPeriod.income,
+      lastPeriod.income
     );
+
     const expensesChange = calculatePercentageChange(
       currentPeriod.expenses,
-      lastPeriod.expenses,
+      lastPeriod.expenses
     );
+
     const remainingChange = calculatePercentageChange(
       currentPeriod.remaining,
-      lastPeriod.remaining,
+      lastPeriod.remaining
     );
 
     const category = await db
       .select({
         name: categories.name,
-        value: sql`SUM(ABS${transactions.amount}))`.mapWith(Number),
+        value: sql`SUM(ABS(${transactions.amount}))`.mapWith(Number),
       })
       .from(transactions)
       .innerJoin(accounts, eq(transactions.accountId, accounts.id))
@@ -105,7 +109,7 @@ const app = new Hono().get(
           eq(accounts.userId, auth.userId),
           lt(transactions.amount, 0),
           gte(transactions.date, startDate),
-          lte(transactions.date, startDate)
+          lte(transactions.date, endDate)
         )
       )
       .groupBy(categories.name)
@@ -119,12 +123,9 @@ const app = new Hono().get(
     );
 
     const finalCategories = topCategories;
-    if (otherCategories.length > 0) {
-      finalCategories.push({
-        name: "Other",
-        value: otherSum,
-      });
-    }
+
+    if (otherCategories.length > 0)
+      finalCategories.push({ name: "Other", value: otherSum });
 
     const activeDays = await db
       .select({
@@ -134,7 +135,7 @@ const app = new Hono().get(
             Number
           ),
         expenses:
-          sql`SUM(CASE WHEN ${transactions.amount} < 0 THEN ABS (${transactions.amount}) ELSE 0 END)`.mapWith(
+          sql`SUM(CASE WHEN ${transactions.amount} < 0 THEN ABS(${transactions.amount}) ELSE 0 END)`.mapWith(
             Number
           ),
       })
@@ -144,9 +145,8 @@ const app = new Hono().get(
         and(
           accountId ? eq(transactions.accountId, accountId) : undefined,
           eq(accounts.userId, auth.userId),
-          lt(transactions.amount, 0),
           gte(transactions.date, startDate),
-          lte(transactions.date, startDate)
+          lte(transactions.date, endDate)
         )
       )
       .groupBy(transactions.date)
@@ -154,7 +154,7 @@ const app = new Hono().get(
 
     const days = fillMissingDays(activeDays, startDate, endDate);
 
-    return c.json({
+    return ctx.json({
       data: {
         remainingAmount: currentPeriod.remaining,
         remainingChange,
