@@ -136,7 +136,7 @@ const TransactionsPage = () => {
             onDelete={(row) => {
               const ids = row.map((r) => r.original.id);
 
-              deleteTransactions.mutate({ ids });
+              deleteTransactions.mutate({ json: { ids } });
             }}
             disabled={isDisabled}
           />
