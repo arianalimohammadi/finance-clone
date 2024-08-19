@@ -57,7 +57,7 @@ const CategoriesPage = () => {
             data={categories}
             onDelete={(row) => {
               const ids = row.map((r) => r.original.id);
-              deleteCategories.mutate({ json: { ids } });
+              deleteCategories.mutate({ ids });
             }}
             disabled={isDisabled}
           />
